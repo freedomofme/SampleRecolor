@@ -44,7 +44,7 @@ class ColorPixels:
         return self._hsv
 
     ## Pixels of the given color space.
-    def pixels(self, color_space="rgb"):
+    def pixels(self, color_space="rgb", all = False):
         image = np.array(self._image)
         if color_space == "rgb":
             if _isGray(image):
@@ -56,17 +56,26 @@ class ColorPixels:
 
         if color_space == "hsv":
             image = rgb2hsv(self._image)
+
+        if all == True:
+            return self._image2pixels(image, s = 1)
+
         return self._image2pixels(image)
 
     #此处下采样
-    def _image2pixels(self, image):
+    def _image2pixels(self, image, s = 0):
         if _isGray(image):
             h, w = image.shape
             step = h * w / self._num_pixels
+            if s == 1:
+                return image.reshape((h * w))[::s]
             return image.reshape((h * w))[::step]
 
         h, w, cs = image.shape
         step = h * w / self._num_pixels
+
+        if s == 1:
+            return image.reshape((-1, cs))[::s]
         return image.reshape((-1, cs))[::step]
 
 
