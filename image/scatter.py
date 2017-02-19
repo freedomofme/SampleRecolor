@@ -8,6 +8,7 @@ from io_util.image import loadRGB, loadLab
 from datasets.google_image import dataFiles
 from core.color_pixels import ColorPixels
 from sklearn.linear_model import LinearRegression
+import copy
 from cv.image import to32F, rgb2Lab, rgb2hsv, gray2rgb
 
 _root_dir = os.path.dirname(__file__)
@@ -43,7 +44,8 @@ def scatterImageForSource(image_file):
     width = np.max(lab[:, 1]) - np.min(lab[:, 1])
     height = np.max(lab[:, 2]) - np.min(lab[:, 2])
     print width
-    print height
+    print np.max(lab[:, 2])
+    print np.min(lab[:, 2])
 
 
     #线性回归
@@ -105,9 +107,20 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     print lab
     print '1111'
 
-    times = 10
+    times = 5
 
+    # intercept = coef_= intercept2= coef_2= intercept3= coef_3= intercept4=coef_4=tLab=rLab=sLab = 0
+    HOLD0 = 8
+    HOLD1 = 4
+    global circle
+    circle = 0
+
+    fig = plt.figure(figsize=(10, 7))
+    fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.1, hspace=0.2)
+    font_size = 15
+    fig.suptitle("ab plane", fontsize=font_size)
     for i in range(times):
+        global intercept, coef_, intercept2, coef_2, intercept3, coef_3, intercept4, coef_4, tLab, rLab, sLab
         #线性回归
         intercept, coef_ = LR(lab)
 
@@ -127,19 +140,36 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
         sMatrix, sLab = scaling(rMatrix, sourceWidth, sourceHeight)
         intercept4, coef_4 = LR(sLab)
 
+        # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 1)
+        # # 不再使用旧的lab，在循环中被污染
+        # # intercept_temp, coef_temp = LR(convert2LabRGB(image)[0])
+        # plot2D(abplane, lab, rgb, intercept, coef_)
+        #
+        # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 2)
+        # plot2D(abplane, tLab, rgb, intercept2, coef_2)
+        #
+        # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 3)
+        # plot2D(abplane, rLab, rgb, intercept3, coef_3)
+        #
+        # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 4)
+        # plot2D(abplane, sLab, rgb, intercept4, coef_4)
+
+        circle += 1
+
+        if (np.abs(np.arctan(sourceCoef) - np.arctan(coef_4)) * 180 / 3.1415926) < 1:
+            print 'finish'
+            break
+
         # print sLab
         print '444'
 
         lab = sLab
 
 
-    fig = plt.figure(figsize=(10, 7))
-    fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.1, hspace=0.2)
-    font_size = 15
-    fig.suptitle("ab plane", fontsize=font_size)
-
     abplane = fig.add_subplot(331)
-    plot2D(abplane, lab, rgb, intercept, coef_)
+    # 不再使用旧的lab，在循环中被污染
+    intercept_temp, coef_temp = LR(convert2LabRGB(image)[0])
+    plot2D(abplane, convert2LabRGB(image)[0], rgb, intercept_temp, coef_temp)
 
     abplane = fig.add_subplot(332)
     plot2D(abplane, tLab, rgb, intercept2, coef_2)
@@ -154,14 +184,20 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     #映射图片
 
     node_image = np.zeros([image.shape[0], image.shape[1], 3], dtype=np.float32)
-    print node_image
 
     #重新获取
     newLab, newRgb = convert2LabRGB(image)
     print len(newLab)
 
+
+    # centerA = (np.min(lab[:, 1]) +  np.max(lab[:, 1])) / 2.0
+    # centerB = (np.min(lab[:, 2]) +  np.max(lab[:, 2])) / 2.0
+    # print centerA
+    # print centerB
+    print '-----'
+
     #2维数据，使用正确的L
-    print len(lab)
+    # print len(lab)
     lab = lab[:, 1:]
     lab = lab.astype(int)
     lab = lab.tolist()
@@ -170,10 +206,20 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
 
     #2维数据
     sourceLab = sourceLab.astype(int)
+    #去重，能加快速度，但是如果要显示335的正确图像效果，需要删除
     sourceLab = uniqueRows(sourceLab)
     print len(sourceLab)
 
-    print sourceLab
+    # sourceCenterA = (np.min(sourceLab[:, 1]) +  np.max(sourceLab[:, 1])) / 2.0
+    # sourceCenterB = (np.min(sourceLab[:, 2]) +  np.max(sourceLab[:, 2])) / 2.0
+    # copyOfsourceLab = copy.deepcopy(sourceLab)
+    # copyOfsourceLab[:,1] += int(centerA - sourceCenterA)
+    # copyOfsourceLab[:,2] += int(centerB - sourceCenterB)
+
+
+    # print sourceLab
+
+
 
     # for i in range(len(cleanLab)):
         # print cleanLab[i]
@@ -197,7 +243,7 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
                          smallest = distance
                 tupleDict[lab[position]] = index
                 # node_image[i,j,1] =
-            print index
+            # print index
             index = tupleDict[lab[position]]
 
             node_image[i,j,0] = newLab[position, 0]
@@ -210,6 +256,11 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
 
     plt.subplot(335)
     plt.imshow(cv2.cvtColor(np.float32(node_image), cv2.COLOR_LAB2RGB) )
+
+    #显示平移后的原图AB图
+    # 舍弃
+    # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 2)
+    # plot2D(abplane, copyOfsourceLab, sourceRgb, 0, 0)
 
     node_image = cv2.cvtColor(np.float32(node_image), cv2.COLOR_LAB2RGB)
     node_image = cv2.cvtColor(np.float32(node_image), cv2.COLOR_RGB2BGR)
@@ -269,7 +320,6 @@ def translation(lab, intercept, coef_):
     resultMatrix = T * M
 
 
-
     #为了删除图像还原出来的lab数据
     resultLab = resultMatrix[:2, :]
     resultLab = resultLab.T
@@ -277,8 +327,6 @@ def translation(lab, intercept, coef_):
 
 
     return resultMatrix, resultLab
-
-
     # print temp
 
 
@@ -289,7 +337,15 @@ def rotation(tMatrix, coef_, targetCoef):
 
     theta = np.arctan(targetCoef) - np.arctan(coef_)
     # theta = 90.0 / 180 * 3.1415
-    # print theta * 180 / 3.1415926
+    print  np.arctan(targetCoef) * 180 / 3.1415926
+    print np.arctan(coef_) * 180 / 3.1415926
+    print theta * 180 / 3.1415926
+
+    if theta * 180 / 3.1415926 > 90:
+        theta = (theta * 180 / 3.1415926 - 180) / 180 * 3.1415926
+    if theta * 180 / 3.1415926 < -90:
+        theta = (theta * 180 / 3.1415926 + 180) / 180 * 3.1415926
+
 
 
     R  = np.mat(np.zeros((2,2)))
