@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import cv2
+import math
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -115,7 +116,7 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     global circle
     circle = 0
 
-    fig = plt.figure(figsize=(10, 7))
+    fig = plt.figure(figsize=(10, 8))
     fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.1, hspace=0.2)
     font_size = 15
     fig.suptitle("ab plane", fontsize=font_size)
@@ -140,21 +141,22 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
         sMatrix, sLab = scaling(rMatrix, sourceWidth, sourceHeight)
         intercept4, coef_4 = LR(sLab)
 
-        # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 1)
-        # # 不再使用旧的lab，在循环中被污染
-        # # intercept_temp, coef_temp = LR(convert2LabRGB(image)[0])
-        # plot2D(abplane, lab, rgb, intercept, coef_)
-        #
-        # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 2)
-        # plot2D(abplane, tLab, rgb, intercept2, coef_2)
-        #
-        # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 3)
-        # plot2D(abplane, rLab, rgb, intercept3, coef_3)
-        #
-        # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 4)
-        # plot2D(abplane, sLab, rgb, intercept4, coef_4)
+        abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 1)
+        # 不再使用旧的lab，在循环中被污染
+        # intercept_temp, coef_temp = LR(convert2LabRGB(image)[0])
+        plot2D(abplane, lab, rgb, intercept, coef_)
+
+        abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 2)
+        plot2D(abplane, tLab, rgb, intercept2, coef_2)
+
+        abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 3)
+        plot2D(abplane, rLab, rgb, intercept3, coef_3)
+
+        abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 4)
+        plot2D(abplane, sLab, rgb, intercept4, coef_4)
 
         circle += 1
+        lab = sLab
 
         if (np.abs(np.arctan(sourceCoef) - np.arctan(coef_4)) * 180 / 3.1415926) < 1:
             print 'finish'
@@ -163,22 +165,22 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
         # print sLab
         print '444'
 
-        lab = sLab
 
 
-    abplane = fig.add_subplot(331)
-    # 不再使用旧的lab，在循环中被污染
-    intercept_temp, coef_temp = LR(convert2LabRGB(image)[0])
-    plot2D(abplane, convert2LabRGB(image)[0], rgb, intercept_temp, coef_temp)
 
-    abplane = fig.add_subplot(332)
-    plot2D(abplane, tLab, rgb, intercept2, coef_2)
-
-    abplane = fig.add_subplot(333)
-    plot2D(abplane, rLab, rgb, intercept3, coef_3)
-
-    abplane = fig.add_subplot(334)
-    plot2D(abplane, sLab, rgb, intercept4, coef_4)
+    # abplane = fig.add_subplot(331)
+    # # 不再使用旧的lab，在循环中被污染
+    # intercept_temp, coef_temp = LR(convert2LabRGB(image)[0])
+    # plot2D(abplane, convert2LabRGB(image)[0], rgb, intercept_temp, coef_temp)
+    #
+    # abplane = fig.add_subplot(332)
+    # plot2D(abplane, tLab, rgb, intercept2, coef_2)
+    #
+    # abplane = fig.add_subplot(333)
+    # plot2D(abplane, rLab, rgb, intercept3, coef_3)
+    #
+    # abplane = fig.add_subplot(334)
+    # plot2D(abplane, sLab, rgb, intercept4, coef_4)
 
 
     #映射图片
@@ -254,8 +256,8 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
             # node_image[i,j,1] = newLab[position, 1]
             # node_image[i,j,2] = newLab[position, 2]
 
-    plt.subplot(335)
-    plt.imshow(cv2.cvtColor(np.float32(node_image), cv2.COLOR_LAB2RGB) )
+    # plt.subplot(335)
+    # plt.imshow(cv2.cvtColor(np.float32(node_image), cv2.COLOR_LAB2RGB) )
 
     #显示平移后的原图AB图
     # 舍弃
@@ -341,10 +343,10 @@ def rotation(tMatrix, coef_, targetCoef):
     print np.arctan(coef_) * 180 / 3.1415926
     print theta * 180 / 3.1415926
 
-    if theta * 180 / 3.1415926 > 90:
-        theta = (theta * 180 / 3.1415926 - 180) / 180 * 3.1415926
-    if theta * 180 / 3.1415926 < -90:
-        theta = (theta * 180 / 3.1415926 + 180) / 180 * 3.1415926
+    while theta < 0:
+        theta += math.pi
+    while theta > math.pi:
+        theta -= math.pi
 
 
 
@@ -369,8 +371,8 @@ def rotation(tMatrix, coef_, targetCoef):
     return resultMatrix, resultLab
 
 def scaling(rMatrix, targetW, targetH):
-    width = np.max(rMatrix[0, :]) - np.min(rMatrix[0, :])
-    height = np.max(rMatrix[1, :]) - np.min(rMatrix[1, :])
+    width = np.max(rMatrix[0, :]) - np.min(rMatrix[0, :]) + 1
+    height = np.max(rMatrix[1, :]) - np.min(rMatrix[1, :]) + 1
 
     S = np.mat(np.zeros((2,2)))
     S[0, 0] = targetW / width
