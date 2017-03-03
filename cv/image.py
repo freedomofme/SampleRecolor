@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-## @package som_cm.cv.image
-#
-#  OpenCV image functions.
-#  @author      tody
-#  @date        2015/07/30
-
-
 import numpy as np
 import cv2
 

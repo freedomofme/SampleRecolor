@@ -6,7 +6,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from io_util.image import loadRGB, loadLab
-from datasets.google_image import dataFiles
+from image.readImage import dataFiles
 from core.color_pixels import ColorPixels
 from sklearn.linear_model import LinearRegression
 import copy
@@ -220,8 +220,8 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
 
 
     # print sourceLab
-
-
+    from scipy import spatial
+    kdTree = spatial.cKDTree(sourceLab[:, 1:])
 
     # for i in range(len(cleanLab)):
         # print cleanLab[i]
@@ -230,27 +230,26 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
         # print i
 
         for j in range(image.shape[1]):
-            smallest = 100000000
 
             position = i * image.shape[1] + j
 
             index = tupleDict.get(lab[position], None)
 
             if index is None:
-                for k in range(len(sourceLab)):
-                    distance = distanceLab(lab[position], sourceLab[k])
-
-                    if distance < smallest:
-                         index = k
-                         smallest = distance
-                tupleDict[lab[position]] = index
+                # for k in range(len(sourceLab)):
+                #     distance = distanceLab(lab[position], sourceLab[k])
+                #
+                #     if distance < smallest:
+                #          index = k
+                #          smallest = distance
+                distance,index2 = kdTree.query([lab[position][0],lab[position][1]], k=1)
                 # node_image[i,j,1] =
             # print index
-            index = tupleDict[lab[position]]
+            tupleDict[lab[position]] = index2
 
             node_image[i,j,0] = newLab[position, 0]
-            node_image[i,j,1] = sourceLab[index, 1]
-            node_image[i,j,2] = sourceLab[index, 2]
+            node_image[i,j,1] = sourceLab[index2, 1]
+            node_image[i,j,2] = sourceLab[index2, 2]
 
             # node_image[i,j,0] = newLab[position, 0]
             # node_image[i,j,1] = newLab[position, 1]

@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-## @package som_cm.core.color_pixels
-#
-#  Simple color pixel class.
-#
-#  @author      tody
-#  @date        2015/08/28
 
 import numpy as np
 

@@ -9,22 +9,6 @@ if __name__ == '__main__':
 
     createScatter('apple')
 
-    import numpy as np
-    data = np.array([[1,8,3,3,4],
-                            [1,8,9,9,4],
-                           [1,8,3,3,4]])
-    new_array = [tuple(row) for row in data]
-
-    dict = {}
-    i = 0
-    for tuple in new_array:
-        dict[tuple] = i
-        i += 1
-
-    tu = (1, 8, 3, 3, 4)
-    print dict[tu]
-    print tu[2]
-
     # import matplotlib.pyplot as plt
     #
     # plt.figure()
