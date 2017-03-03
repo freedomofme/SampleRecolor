@@ -243,13 +243,13 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
                 #          index = k
                 #          smallest = distance
                 distance,index2 = kdTree.query([lab[position][0],lab[position][1]], k=1)
-                # node_image[i,j,1] =
+                tupleDict[lab[position]] = index2
             # print index
-            tupleDict[lab[position]] = index2
+            index = tupleDict[lab[position]]
 
             node_image[i,j,0] = newLab[position, 0]
-            node_image[i,j,1] = sourceLab[index2, 1]
-            node_image[i,j,2] = sourceLab[index2, 2]
+            node_image[i,j,1] = sourceLab[index, 1]
+            node_image[i,j,2] = sourceLab[index, 2]
 
             # node_image[i,j,0] = newLab[position, 0]
             # node_image[i,j,1] = newLab[position, 1]
