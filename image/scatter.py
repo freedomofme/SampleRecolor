@@ -9,6 +9,8 @@ from io_util.image import loadRGB, loadLab
 from image.readImage import dataFiles
 from core.color_pixels import ColorPixels
 from sklearn.linear_model import LinearRegression
+import time
+from scipy.odr import *
 import copy
 from cv.image import to32F, rgb2Lab, rgb2hsv, gray2rgb
 
@@ -69,8 +71,8 @@ def scatterImageForSource(image_file):
     # print sLab
     print 'source finished'
 
-    fig = plt.figure(figsize=(10, 7))
-    fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.1, hspace=0.2)
+    fig = plt.figure(figsize=(20, 20))
+    fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.4, hspace=0.4)
     font_size = 15
     fig.suptitle("ab plane", fontsize=font_size)
 
@@ -108,17 +110,19 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     print lab
     print '1111'
 
-    times = 5
+    times = 10
+
+    start = time.time()
 
     # intercept = coef_= intercept2= coef_2= intercept3= coef_3= intercept4=coef_4=tLab=rLab=sLab = 0
-    HOLD0 = 8
+    HOLD0 = 10
     HOLD1 = 4
     global circle
     circle = 0
 
-    fig = plt.figure(figsize=(10, 8))
-    fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.1, hspace=0.2)
-    font_size = 15
+    fig = plt.figure(figsize=(20, 40))
+    fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.4, hspace=0.4)
+    font_size = 10
     fig.suptitle("ab plane", fontsize=font_size)
     for i in range(times):
         global intercept, coef_, intercept2, coef_2, intercept3, coef_3, intercept4, coef_4, tLab, rLab, sLab
@@ -160,6 +164,7 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
 
         if (np.abs(np.arctan(sourceCoef) - np.arctan(coef_4)) * 180 / 3.1415926) < 1:
             print 'finish'
+            rMatrix, lab = rotation(sMatrix, coef_, sourceCoef, 2)
             break
 
         # print sLab
@@ -181,6 +186,7 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     #
     # abplane = fig.add_subplot(334)
     # plot2D(abplane, sLab, rgb, intercept4, coef_4)
+
 
 
     #映射图片
@@ -266,7 +272,7 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     node_image = cv2.cvtColor(np.float32(node_image), cv2.COLOR_LAB2RGB)
     node_image = cv2.cvtColor(np.float32(node_image), cv2.COLOR_RGB2BGR)
     node_image = 255 * node_image
-
+    print 'cost time:' + str(time.time() - start)
     cv2.imwrite('./test.png', node_image)
 
     savePlot(plt, image_name)
@@ -284,16 +290,36 @@ def convert2LabRGB(image):
     color_pixels = ColorPixels(image, num_pixels = 10000)
     return color_pixels.pixels('Lab', all = True), color_pixels.pixels('rgb', all = True)
 
+#Fit using odr
+def f(B, x):
+    return B[0]*x + B[1]
+
 def LR(lab, fit_intercept=True):
-    model = LinearRegression(fit_intercept=fit_intercept)
+    model = LinearRegression(fit_intercept=fit_intercept, normalize =True)
     x = lab[:,1].reshape(len(lab[:,1]), 1)
     y = lab[:, 2]
     model.fit(x, y)
     # print (y - model.predict(x))
     # print '系数:' + str(model.intercept_)
     # print '斜率:' + str(model.coef_[0])
-
     return model.intercept_, model.coef_[0]
+
+    # x = lab[:,1].flatten()
+    # y = lab[:, 2].flatten()
+    # x = np.asarray(x).reshape(-1)
+    # y = np.asarray(y).reshape(-1)
+    #
+    # linear = Model(f)
+    # mydata = RealData(x, y)
+    # from scipy.stats import linregress
+    # linreg = linregress(x, y)
+    # myodr = ODR(mydata, linear, beta0 = linreg[0:2])
+    # myoutput = myodr.run()
+    # print list(myoutput.beta)
+    # print '-'*10
+    #
+    # a, b = myoutput.beta
+    # return b, a
 
 def translation(lab, intercept, coef_):
     # print lab
@@ -331,7 +357,7 @@ def translation(lab, intercept, coef_):
     # print temp
 
 
-def rotation(tMatrix, coef_, targetCoef):
+def rotation(tMatrix, coef_, targetCoef, angle = 0):
 
     #除去平移时增加的最后一行1
     tMatrix = tMatrix[:len(tMatrix)-1 ,:]
@@ -347,7 +373,8 @@ def rotation(tMatrix, coef_, targetCoef):
     while theta > math.pi:
         theta -= math.pi
 
-
+    if angle != 0:
+        theta = 180 / 3.1415926  * 180
 
     R  = np.mat(np.zeros((2,2)))
     R[0, 0] = np.cos(theta)
