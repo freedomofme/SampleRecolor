@@ -171,24 +171,6 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
         print '444'
 
 
-
-
-    # abplane = fig.add_subplot(331)
-    # # 不再使用旧的lab，在循环中被污染
-    # intercept_temp, coef_temp = LR(convert2LabRGB(image)[0])
-    # plot2D(abplane, convert2LabRGB(image)[0], rgb, intercept_temp, coef_temp)
-    #
-    # abplane = fig.add_subplot(332)
-    # plot2D(abplane, tLab, rgb, intercept2, coef_2)
-    #
-    # abplane = fig.add_subplot(333)
-    # plot2D(abplane, rLab, rgb, intercept3, coef_3)
-    #
-    # abplane = fig.add_subplot(334)
-    # plot2D(abplane, sLab, rgb, intercept4, coef_4)
-
-
-
     #映射图片
 
     node_image = np.zeros([image.shape[0], image.shape[1], 3], dtype=np.float32)
@@ -197,11 +179,6 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     newLab, newRgb = convert2LabRGB(image)
     print len(newLab)
 
-
-    # centerA = (np.min(lab[:, 1]) +  np.max(lab[:, 1])) / 2.0
-    # centerB = (np.min(lab[:, 2]) +  np.max(lab[:, 2])) / 2.0
-    # print centerA
-    # print centerB
     print '-----'
 
     #2维数据，使用正确的L
@@ -218,19 +195,12 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     sourceLab = uniqueRows(sourceLab)
     print len(sourceLab)
 
-    # sourceCenterA = (np.min(sourceLab[:, 1]) +  np.max(sourceLab[:, 1])) / 2.0
-    # sourceCenterB = (np.min(sourceLab[:, 2]) +  np.max(sourceLab[:, 2])) / 2.0
-    # copyOfsourceLab = copy.deepcopy(sourceLab)
-    # copyOfsourceLab[:,1] += int(centerA - sourceCenterA)
-    # copyOfsourceLab[:,2] += int(centerB - sourceCenterB)
 
 
     # print sourceLab
     from scipy import spatial
     kdTree = spatial.cKDTree(sourceLab[:, 1:])
 
-    # for i in range(len(cleanLab)):
-        # print cleanLab[i]
 
     for i in range(image.shape[0]):
         # print i
@@ -242,12 +212,7 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
             index = tupleDict.get(lab[position], None)
 
             if index is None:
-                # for k in range(len(sourceLab)):
-                #     distance = distanceLab(lab[position], sourceLab[k])
-                #
-                #     if distance < smallest:
-                #          index = k
-                #          smallest = distance
+
                 distance,index2 = kdTree.query([lab[position][0],lab[position][1]], k=1)
                 tupleDict[lab[position]] = index2
             # print index
@@ -256,18 +221,6 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
             node_image[i,j,0] = newLab[position, 0]
             node_image[i,j,1] = sourceLab[index, 1]
             node_image[i,j,2] = sourceLab[index, 2]
-
-            # node_image[i,j,0] = newLab[position, 0]
-            # node_image[i,j,1] = newLab[position, 1]
-            # node_image[i,j,2] = newLab[position, 2]
-
-    # plt.subplot(335)
-    # plt.imshow(cv2.cvtColor(np.float32(node_image), cv2.COLOR_LAB2RGB) )
-
-    #显示平移后的原图AB图
-    # 舍弃
-    # abplane = fig.add_subplot(HOLD0, HOLD1, HOLD1 * circle + 2)
-    # plot2D(abplane, copyOfsourceLab, sourceRgb, 0, 0)
 
     node_image = cv2.cvtColor(np.float32(node_image), cv2.COLOR_LAB2RGB)
     node_image = cv2.cvtColor(np.float32(node_image), cv2.COLOR_RGB2BGR)
