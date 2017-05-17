@@ -6,8 +6,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from image.scatter import readImage,createScatter
 
 if __name__ == '__main__':
-
     createScatter('apple')
+
+
 
     # import matplotlib.pyplot as plt
     #

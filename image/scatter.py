@@ -24,32 +24,26 @@ def createScatter(image_dir):
     i = 0
     sourceFile = images[0]
 
-    sourceCoef, sourceWidth, sourceHeight =  scatterImageForSource(sourceFile)
+    sourceCoef, sourceWidth, sourceHeight =  scatterImageForSource(loadRGB(sourceFile))
     for image in images:
         if i == 0:
             i += 1
             continue
         print '-----------------'
-        scatterImage(image, sourceFile, sourceCoef, sourceWidth, sourceHeight)
+        scatterImage(loadRGB(image), loadRGB(sourceFile), sourceCoef, sourceWidth, sourceHeight)
 
 
 def readImage(image_dir):
     return dataFiles(image_dir)
 
-def scatterImageForSource(image_file):
-    image_name = os.path.basename(image_file)
-    image_name = os.path.splitext(image_name)[0]
-
-
-    image = loadRGB(image_file)
+def scatterImageForSource(image):
     lab, rgb = convert2LabRGB(image)
     print lab
     width = np.max(lab[:, 1]) - np.min(lab[:, 1])
     height = np.max(lab[:, 2]) - np.min(lab[:, 2])
-    print width
-    print np.max(lab[:, 2])
-    print np.min(lab[:, 2])
-
+    # print width
+    # print np.max(lab[:, 2])
+    # print np.min(lab[:, 2])
 
     #线性回归
     intercept, coef_ = LR(lab)
@@ -71,7 +65,7 @@ def scatterImageForSource(image_file):
     # print sLab
     print 'source finished'
 
-    fig = plt.figure(figsize=(20, 20))
+    fig = plt.figure(figsize=(10, 10))
     fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.4, hspace=0.4)
     font_size = 15
     fig.suptitle("ab plane", fontsize=font_size)
@@ -88,46 +82,72 @@ def scatterImageForSource(image_file):
     abplane = fig.add_subplot(334)
     plot2D(abplane, sLab, rgb, intercept4, coef_4)
 
-    savePlot(plt, image_name)
+    savePlot(plt, "source.png")
 
     return coef_, width, height
 
 
-def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
+def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
     tupleDict = {}
 
-    image_name = os.path.basename(image_file)
-    image_name = os.path.splitext(image_name)[0]
-
-
-    image = loadRGB(image_file)
     lab, rgb = convert2LabRGB(image)
-    print lab
-
-    sourceImage = loadRGB(sourceFile)
     sourceLab, sourceRgb = convert2LabRGB(sourceImage)
 
-    print lab
-    print '1111'
+    sourceLab = sourceLab[0:len(sourceLab): 4]
 
-    times = 10
+    # print sourceLab
+    print 'sourceLab'
+    print '变换后的流形长度为' + str(len(sourceLab))
+
+    # source5Dim = np.empty((len(sourceLab),2))
+    # target5Dim = np.empty((len(lab),2))
+    #
+    # r = 1
+    # r2 = 1
+    # for index in range(len(sourceLab)):
+    #     source5Dim[index, 0] = sourceLab[index, 1] * r
+    #     source5Dim[index, 1] = sourceLab[index, 2] * r
+    #     # source5Dim[index, 2] = sourceLab[index, 2] * r
+    # print source5Dim
+    # print '---'
+    #
+    # for index in range(len(target5Dim)):
+    #     target5Dim[index, 0] = lab[index,1] * r
+    #     target5Dim[index, 1] = lab[index,2] * r
+    #     # target5Dim[index, 2] = lab[index,2] * r
+    # from emd import emd
+    # n = len(source5Dim)
+    # m = len(target5Dim)
+    # r = 1
+    # if n < m:
+    #     r = m / 1.0 / n
+    # re, li = emd(target5Dim, source5Dim, X_weights = np.ones(m)/m, Y_weights = np.ones(n)/n * r, return_flows = True, distance='mahalanobis')
+    #
+    # print li
+    # print '###'
+
+
+    times = 30
 
     start = time.time()
 
     # intercept = coef_= intercept2= coef_2= intercept3= coef_3= intercept4=coef_4=tLab=rLab=sLab = 0
-    HOLD0 = 10
+    HOLD0 = 30
     HOLD1 = 4
     global circle
     circle = 0
 
-    fig = plt.figure(figsize=(20, 40))
+    fig = plt.figure(figsize=(20, 80))
     fig.subplots_adjust(left=0.1, bottom=0.05, right=0.95, top=0.9, wspace=0.4, hspace=0.4)
     font_size = 10
     fig.suptitle("ab plane", fontsize=font_size)
+
+    reverse = None
     for i in range(times):
         global intercept, coef_, intercept2, coef_2, intercept3, coef_3, intercept4, coef_4, tLab, rLab, sLab
         #线性回归
         intercept, coef_ = LR(lab)
+
 
         # 平移
         tMatrix, tLab = translation(lab, intercept, coef_)
@@ -162,9 +182,11 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
         circle += 1
         lab = sLab
 
-        if (np.abs(np.arctan(sourceCoef) - np.arctan(coef_4)) * 180 / 3.1415926) < 1:
-            print 'finish'
-            rMatrix, lab = rotation(sMatrix, coef_, sourceCoef, 2)
+        if (np.abs(np.arctan(sourceCoef) - np.arctan(coef_4)) < 0.1):
+            print 'finish!!!!!!!!!'
+            intercept, coef_ = LR(lab)
+            tMatrix, tLab = translation(lab, intercept, coef_)
+            rMatrix, reverse = rotation(tMatrix, coef_, 1, 2)
             break
 
         # print sLab
@@ -183,7 +205,10 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
 
     #2维数据，使用正确的L
     # print len(lab)
-    lab = lab[:, 1:]
+    if reverse != None:
+        lab = reverse[:, 1:]
+    else:
+        lab = lab[:, 1:]
     lab = lab.astype(int)
     lab = lab.tolist()
     lab = [tuple(row) for row in lab]
@@ -228,7 +253,7 @@ def scatterImage(image_file, sourceFile, sourceCoef, sourceWidth, sourceHeight):
     print 'cost time:' + str(time.time() - start)
     cv2.imwrite('./test.png', node_image)
 
-    savePlot(plt, image_name)
+    # savePlot(plt, 'target.png')
 
 def distanceLab(lab, sourceLab):
 
@@ -327,7 +352,7 @@ def rotation(tMatrix, coef_, targetCoef, angle = 0):
         theta -= math.pi
 
     if angle != 0:
-        theta = 180 / 3.1415926  * 180
+        theta = math.pi
 
     R  = np.mat(np.zeros((2,2)))
     R[0, 0] = np.cos(theta)
@@ -341,7 +366,7 @@ def rotation(tMatrix, coef_, targetCoef, angle = 0):
 
     # print resultMatrix
 
-    #为了删除图像还原出来的lab数据
+    #为了显示图像还原出来的lab数据
     resultLab = resultMatrix[:2, :]
     resultLab = resultLab.T
     resultLab = np.column_stack((np.ones((len(resultLab),), dtype=np.int), resultLab))
@@ -359,7 +384,7 @@ def scaling(rMatrix, targetW, targetH):
 
     resultMatrix = S * rMatrix
 
-    #为了删除图像还原出来的lab数据
+    #为了显示图像还原出来的lab数据
     resultLab = resultMatrix[:2, :]
     resultLab = resultLab.T
     resultLab = np.column_stack((np.ones((len(resultLab),), dtype=np.int), resultLab))
