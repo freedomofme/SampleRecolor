@@ -4,7 +4,7 @@
 >
 
 ### 原图：
-![](./image/apple/11.jpg)
+![](./image/apple/11.png)
 
 ### 模板（基于Data-driven Color Manifolds 生成）
 ![](./image/apple/000.png)
