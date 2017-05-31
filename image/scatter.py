@@ -90,13 +90,19 @@ def scatterImageForSource(image):
 def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
     tupleDict = {}
 
+    # sourceImage = sourceImage[1,:,:]
+    print  sourceImage
+
     lab, rgb = convert2LabRGB(image)
     sourceLab, sourceRgb = convert2LabRGB(sourceImage)
 
-    sourceLab = sourceLab[0:len(sourceLab): 4]
+    print sourceImage.shape
 
-    # print sourceLab
-    print 'sourceLab'
+    # 忘记作用了
+    sourceLab = sourceLab[0:len(sourceLab): 4]
+    # 除去png的透明色
+    # sourceLab = sourceLab[:,:3]
+
     print '变换后的流形长度为' + str(len(sourceLab))
 
     # source5Dim = np.empty((len(sourceLab),2))
@@ -152,13 +158,11 @@ def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
         # 平移
         tMatrix, tLab = translation(lab, intercept, coef_)
         # print tLab
-        print '222'
         intercept2, coef_2 = LR(tLab)
 
         #旋转
         rMatrix, rLab = rotation(tMatrix, coef_, sourceCoef)
         # print rLab
-        print '333'
         intercept3, coef_3 = LR(rLab)
 
         #缩放
@@ -184,13 +188,12 @@ def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
 
         if (np.abs(np.arctan(sourceCoef) - np.arctan(coef_4)) < 0.1):
             print 'finish!!!!!!!!!'
-            intercept, coef_ = LR(lab)
-            tMatrix, tLab = translation(lab, intercept, coef_)
-            rMatrix, reverse = rotation(tMatrix, coef_, 1, 2)
+            # intercept, coef_ = LR(lab)
+            # tMatrix, tLab = translation(lab, intercept, coef_)
+            # rMatrix, reverse = rotation(tMatrix, coef_, 1, 2)
             break
 
         # print sLab
-        print '444'
 
 
     #映射图片
@@ -208,6 +211,7 @@ def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
     if reverse != None:
         lab = reverse[:, 1:]
     else:
+        print 'not reverse'
         lab = lab[:, 1:]
     lab = lab.astype(int)
     lab = lab.tolist()

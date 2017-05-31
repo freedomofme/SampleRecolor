@@ -1,4 +1,4 @@
-#Sample recolor
+#Image recoloring using linear template mapping 基于线性映射模板的色彩转移
 
 >基于论文Image recoloring using linear template mapping实现
 >
@@ -10,4 +10,4 @@
 ![](./image/apple/0.png)
 
 ### 效果图
-![](./test.png)
+![](./old.png)
