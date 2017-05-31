@@ -4,10 +4,10 @@
 >
 
 ### 原图：
-![](./image/apple/1.jpg)
+![](./image/apple/11.jpg)
 
-### 转换流形
-![](./image/apple/0.png)
+### 模板（基于Data-driven Color Manifolds 生成）
+![](./image/apple/000.png)
 
 ### 效果图
 ![](./old.png)
