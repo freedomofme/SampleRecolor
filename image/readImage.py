@@ -3,7 +3,7 @@
 
 import json
 import os
-import urllib2
+# import urllib2
 import httplib2
 
 import cv2
@@ -17,8 +17,8 @@ _root_dir = os.path.dirname(__file__)
 ## Data directory for the given data_name.
 def dataDir(data_name):
     data_dir = os.path.join(_root_dir, data_name)
-    print data_name
-    print _root_dir
+    # print data_name
+    # print _root_dir
     return data_dir
 
 
