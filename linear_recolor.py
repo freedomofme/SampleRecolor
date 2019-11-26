@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import cv2
 import math
 import os
@@ -10,13 +9,9 @@ from core.color_pixels import ColorPixels
 from sklearn.linear_model import LinearRegression
 import time
 
-_root_dir = os.path.dirname(__file__)
-
-tupleDict = {}
-
-def createScatter(sourceFile, tragetFile):
+def linear_recolor(sourceFile, tragetFile, reverse_map=True):
     sourceCoef, sourceWidth, sourceHeight =  getSourceImageCoef(loadRGB(sourceFile))
-    scatterImage(loadRGB(tragetFile), loadRGB(sourceFile), sourceCoef, sourceWidth, sourceHeight)
+    return scatterImage(loadRGB(tragetFile), loadRGB(sourceFile), sourceCoef, sourceWidth, sourceHeight, reverse_map)
 
 def getSourceImageCoef(image):
     lab, rgb = convert2LabRGB(image)
@@ -27,22 +22,15 @@ def getSourceImageCoef(image):
     intercept, coef_ = LR(lab)
     return coef_, width, height
 
-def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
+def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight, reverse_map):
     tupleDict = {}
-
     # sourceImage = sourceImage[1,:,:]
-    print(sourceImage)
-
     lab, rgb = convert2LabRGB(image)
     sourceLab, sourceRgb = convert2LabRGB(sourceImage)
-
     print(sourceImage.shape)
-
     sourceLab = sourceLab[0:len(sourceLab): 4]
     # 除去png的透明色
     # sourceLab = sourceLab[:,:3]
-
-    print('变换后的流形长度为' + str(len(sourceLab)))
 
     times = 30
     start = time.time()
@@ -74,9 +62,10 @@ def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
         lab = sLab
 
         if (np.abs(np.arctan(sourceCoef) - np.arctan(coef_4)) < 0.1):
-            intercept, coef_ = LR(lab)
-            tMatrix, tLab = translation(lab, intercept, coef_)
-            rMatrix, reverse = rotation(tMatrix, coef_, 1, 2)
+            if reverse_map:
+                intercept, coef_ = LR(lab)
+                tMatrix, tLab = translation(lab, intercept, coef_)
+                rMatrix, reverse = rotation(tMatrix, coef_, 1, 2)
             break
 
     #映射图片
@@ -86,7 +75,7 @@ def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
     newLab, newRgb = convert2LabRGB(image)
 
     #2维数据，使用正确的L
-    if reverse.any() != None:
+    if reverse is not None:
         lab = reverse[:, 1:]
     else:
         print('not reverse')
@@ -123,9 +112,11 @@ def scatterImage(image, sourceImage, sourceCoef, sourceWidth, sourceHeight):
     node_image = cv2.cvtColor(np.float32(node_image), cv2.COLOR_RGB2BGR)
     node_image = 255 * node_image
     print('cost time:' + str(time.time() - start))
-    cv2.imwrite('./test.png', node_image)
+    # cv2.imwrite('./test.png', node_image)
 
     # savePlot(plt, 'target.png')
+
+    return node_image
 
 def distanceLab(lab, sourceLab):
     return (lab[0] - sourceLab[1]) * (lab[0] - sourceLab[1]) + (lab[1] - sourceLab[2]) * (lab[1] - sourceLab[2])
@@ -259,5 +250,14 @@ def savePlot(plt, image_name):
 
 
 def resultFile(image_name, image_ext=".png"):
+    _root_dir = os.path.dirname(__file__)
     result_file = os.path.join(_root_dir, image_name + image_ext)
     return result_file
+
+if __name__ == '__main__':
+    _root_dir = os.path.dirname(__file__)
+    reuslt = linear_recolor(_root_dir + '/image/apple/manifest.png',
+                  _root_dir + '/image/apple/source.png',
+                   reverse_map=False)
+
+    cv2.imwrite('./test.png', reuslt)
