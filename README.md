@@ -4,6 +4,7 @@
 >
 
 ### Install
+    pip install LinearRecolor==1.0.0
 
 ### Usage
     _root_dir = os.path.dirname(__file__)
@@ -22,12 +23,12 @@ manifest.png could be created by this program [Grayscale](https://github.com/fre
     manifest = som.get_1d_manifold(one_souce_image)
 
 #### 原图(source.png)：
-![](image/apple/source.png)
+![](https://raw.githubusercontent.com/freedomofme/SampleRecolor/master/image/apple/source.png)
 
-#### 模板(manifest.png)（基于Data-driven Color Manifolds 生成）
-![](image/apple/manifest.png)
+#### 模板(manifest.png)（基于Data-driven Color Manifolds 生成）[参见get_1d_manifold](https://github.com/freedomofme/Grayscale)
+![](https://raw.githubusercontent.com/freedomofme/SampleRecolor/master/image/apple/manifest.png)
 
 #### 效果图
-![](image/apple/result.png)
+![](https://raw.githubusercontent.com/freedomofme/SampleRecolor/master/image/apple/result.png)
 ==
-![](image/apple/result_reverse.png)
+![](https://raw.githubusercontent.com/freedomofme/SampleRecolor/master/image/apple/result_reverse.png)
