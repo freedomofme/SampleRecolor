@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 install_requires=[
 "cycler==0.10.0",
 "decorator==4.4.1",
-"httplib2==0.14.0",
+"httplib2==0.18.0",
 "imageio==2.6.1",
 "joblib==0.14.0",
 "kiwisolver==1.1.0",
