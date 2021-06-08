@@ -17,7 +17,7 @@ install_requires=[
 "numpy==1.17.3",
 "opencv-python==4.1.2.30",
 "pandas==0.25.3",
-"Pillow==8.1.1",
+"Pillow==8.2.0",
 "pyparsing==2.4.4",
 "python-dateutil==2.8.1",
 "pytz==2019.3",
