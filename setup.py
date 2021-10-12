@@ -15,7 +15,7 @@ install_requires=[
 "networkx==2.4",
 "nltk==3.4.5",
 "numpy==1.17.3",
-"opencv-python==4.1.2.30",
+"opencv-python==4.2.0.32",
 "pandas==0.25.3",
 "Pillow==8.1.1",
 "pyparsing==2.4.4",
