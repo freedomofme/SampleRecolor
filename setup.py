@@ -14,7 +14,7 @@ install_requires=[
 "matplotlib==3.1.1",
 "networkx==2.4",
 "nltk==3.4.5",
-"numpy==1.17.3",
+"numpy==1.22.0",
 "opencv-python==4.1.2.30",
 "pandas==0.25.3",
 "Pillow==8.1.1",
