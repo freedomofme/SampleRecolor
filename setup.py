@@ -9,7 +9,7 @@ install_requires=[
 "decorator==4.4.1",
 "httplib2==0.19.0",
 "imageio==2.6.1",
-"joblib==0.14.0",
+"joblib==1.2.0",
 "kiwisolver==1.1.0",
 "matplotlib==3.1.1",
 "networkx==2.4",
